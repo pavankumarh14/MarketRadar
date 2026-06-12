@@ -1,10 +1,10 @@
 services:
-  # Backend API Service
+  # Single service serving both frontend and backend
   - type: web
-    name: marketradar-backend
+    name: marketradar
     runtime: node
     plan: free
-    buildCommand: cd backend && npm install
+    buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
@@ -12,7 +12,7 @@ services:
       - key: PORT
         value: 3001
       - key: FRONTEND_ORIGIN
-        value: https://marketradar-frontend.onrender.com
+        value: https://marketradar.onrender.com
       - key: GROQ_API_KEY
         sync: false
     healthCheckPath: /health
@@ -21,14 +21,3 @@ services:
       name: data
       mountPath: /opt/render/project/backend/data
       sizeGB: 1
-
-  # Frontend Service
-  - type: web
-    name: marketradar-frontend
-    runtime: node
-    plan: free
-    buildCommand: cd frontend && npm install && npm run build
-    startCommand: cd frontend && npm run preview
-    envVars:
-      - key: VITE_API_URL
-        value: https://marketradar-backend.onrender.com

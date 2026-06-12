@@ -7,6 +7,7 @@ const cors    = require('cors');
 const http    = require('http');
 const { WebSocketServer } = require('ws');
 const { v4: uuidv4 }      = require('uuid');
+const path    = require('path');
 
 const {
   getDb,
@@ -33,6 +34,19 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Serve frontend static files in production
+if (NODE_ENV === 'production') {
+  const frontendDist = path.join(__dirname, '../../frontend/dist');
+  app.use(express.static(frontendDist));
+  
+  // Serve index.html for all non-API routes (SPA support)
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/ws')) {
+      res.sendFile(path.join(frontendDist, 'index.html'));
+    }
+  });
+}
 
 // ── WebSocket ─────────────────────────────────────────────────────────────────
 
