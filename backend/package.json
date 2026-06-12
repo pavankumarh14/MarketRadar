@@ -3,18 +3,20 @@
   "version": "1.0.0",
   "description": "MarketRadar competitive intelligence swarm — backend",
   "type": "commonjs",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js"
   },
   "dependencies": {
-    "better-sqlite3": "^9.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "node-cron": "^3.0.3",
+    "sql.js": "^1.14.1",
     "uuid": "^9.0.1",
     "ws": "^8.17.0"
   }

@@ -104,6 +104,74 @@ body {
 .conf-pct { font-size: 11px; color: var(--text-muted); width: 32px; text-align: right; }
 
 .signal-cycle { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.signal-details {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.signal-details h4 {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.signal-item, .interpretation-item, .shift-item, .rec-item, .narrative-item {
+  background: var(--bg-card);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.signal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.signal-item strong, .interpretation-item strong, .shift-item strong, .rec-item strong {
+  color: var(--text-primary);
+}
+.signal-item small, .interpretation-item small, .shift-item small, .rec-item small {
+  color: var(--text-muted);
+}
+.narrative-item p {
+  margin: 0;
+}
+.hot-threads-list ul {
+  padding-left: 18px;
+  margin: 0;
+}
+.hot-threads-list li {
+  font-size: 12px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.urgency-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+.urgency-high { background: #dc262622; color: #dc2626; }
+.urgency-medium { background: #ca8a0422; color: #ca8a04; }
+.urgency-low { background: #16a34a22; color: #16a34a; }
+.rec-priority {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-right: 8px;
+}
+.rec-high { background: #dc262622; color: #dc2626; }
+.rec-medium { background: #ca8a0422; color: #ca8a04; }
+.rec-low { background: #16a34a22; color: #16a34a; }
 
 /* ── Main panel ────────────────────────────────────────────────────────────── */
 .main-panel { flex: 1; overflow-y: auto; padding: 20px; }
@@ -213,15 +281,81 @@ body {
 .priority-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; display: block; }
 .rec-rationale { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
+/* ── Brief panel ────────────────────────────────────────────────────────────── */
+.brief-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+.brief-header h2 { margin: 0; font-size: 20px; }
+.brief-history { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.history-label { font-size: 12px; color: var(--text-muted); }
+.cycle-tab {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cycle-tab:hover { background: var(--bg-hover); color: var(--text-primary); }
+.cycle-tab.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.executive-summary {
+  background: var(--bg);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+
+.insights-list, .recommendations-list { display: flex; flex-direction: column; gap: 10px; }
+.insight-card, .rec-card {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+}
+.insight-bullet {
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+  margin-top: 2px;
+}
+.rec-card { flex-direction: column; }
+.rec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.rec-rationale {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+.stub-warning {
+  background: #ca8a0422;
+  border: 1px solid #ca8a04;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #fcd34d;
+}
+
 /* ── Stub banners ──────────────────────────────────────────────────────────── */
 .stub-banner {
-  background: #92400e22; border: 1px solid #92400e;
-  color: #fcd34d; border-radius: 8px; padding: 10px 14px; font-size: 13px;
+  background: #92400e22;
+  border: 1px solid #92400e;
+  color: #fcd34d;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
 }
 .stub-label { font-weight: 600; color: var(--yellow); font-size: 13px; margin-bottom: 4px; }
 .stub-hint  { font-size: 12px; color: var(--text-muted); }
 .dag-view.stub, .signal-timeline.stub, .brief-panel.stub {
-  display: flex; flex-direction: column; gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* ── Animations ────────────────────────────────────────────────────────────── */

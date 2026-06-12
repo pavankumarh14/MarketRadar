@@ -1,102 +1,9 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
-
-// ═════════════════════════════════════════════════════════════════════════════
-// CANDIDATE TASK — DAG Visualisation
-// ═════════════════════════════════════════════════════════════════════════════
-//
-// Render the live investigation pipeline as an animated SVG graph using D3.
-// The DAG shows six nodes across three phases — scouts fan out, analyst
-// consolidates, strategist synthesises — with live status colouring.
-//
-//
-// PROPS
-// ─────
-// dag: {
-//   id:     string,
-//   status: 'running' | 'completed' | 'failed',
-//   nodes: [{
-//     id:           string,   e.g. 'scout-pricing'
-//     capability:   string,   same as id
-//     phase:        1 | 2 | 3,
-//     status:       'pending' | 'running' | 'completed' | 'failed',
-//     confidence:   number | null,
-//     started_at:   string | null,
-//     completed_at: string | null,
-//   }]
-// } | null
-//
-// findings: Finding[]   (use to show confidence badge on completed nodes)
-//
-//
-// REQUIRED BEHAVIOURS
-// ────────────────────
-// 1. Node colours by status:
-//      pending   → #374151 (grey)
-//      running   → #2563eb (blue) with a CSS pulse animation
-//      completed → #16a34a (green)
-//      failed    → #dc2626 (red)
-//
-// 2. Edges:
-//      scout-pricing  → analyst
-//      scout-hiring   → analyst
-//      scout-news     → analyst
-//      scout-patents  → analyst
-//      analyst        → strategist
-//    Draw as SVG <line> or <path> with arrowhead markers.
-//
-// 3. Labels: display a readable name, not the raw id.
-//    e.g. 'scout-pricing' → 'Scout: Pricing'
-//
-// 4. Confidence badge: on completed nodes, show the confidence % in the node.
-//
-// 5. Pulse animation: add a CSS keyframe that scales/glows running nodes.
-//    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.6 } }
-//
-//
-// SUGGESTED LAYOUT (fixed positions — simpler than force simulation):
-//
-//   Phase 1 (scouts) — horizontal row, y = 80
-//     scout-pricing:  x = 80
-//     scout-hiring:   x = 230
-//     scout-news:     x = 380
-//     scout-patents:  x = 530
-//
-//   Phase 2 (analyst) — centred, y = 220
-//     analyst:        x = 305
-//
-//   Phase 3 (strategist) — centred, y = 360
-//     strategist:     x = 305
-//
-//   SVG viewBox: "0 0 620 440"
-//
-//
-// D3 PATTERN TO USE
-// ──────────────────
-//   const svgRef = useRef(null);
-//   useEffect(() => {
-//     if (!dag || !svgRef.current) return;
-//     const svg = d3.select(svgRef.current);
-//     svg.selectAll('*').remove();          // clear on each update
-//     // draw edges first (so nodes render on top)
-//     // draw nodes as <circle> or <rect>
-//     // draw labels as <text>
-//   }, [dag, findings]);
-//
-// The useEffect re-runs on every dag/findings change — the WebSocket in App.jsx
-// updates `dag` on every dag_update event, giving you live animation.
-//
-//
-// REFERENCE COMPONENTS
-// ─────────────────────
-// SignalList.jsx  — shows how to consume props.findings
-// ../hooks/useWebSocket.js — shows what events the WS emits
-// ../services/api.js — getDAGFindings(dagId) if you need to fetch findings
-//
-// ═════════════════════════════════════════════════════════════════════════════
 
 export function DAGView({ dag, findings = [] }) {
   const svgRef = useRef(null);
+  const [hoveredNode, setHoveredNode] = useState(null);
 
   useEffect(() => {
     if (!dag || !svgRef.current) return;
@@ -106,12 +13,12 @@ export function DAGView({ dag, findings = [] }) {
 
     // Node positions (fixed layout)
     const nodePositions = {
-      'scout-pricing': { x: 80, y: 80 },
-      'scout-hiring': { x: 230, y: 80 },
-      'scout-news': { x: 380, y: 80 },
-      'scout-patents': { x: 530, y: 80 },
-      'analyst': { x: 305, y: 220 },
-      'strategist': { x: 305, y: 360 },
+      'scout-pricing': { x: 80, y: 60, label: 'Scout: Pricing', icon: '💰' },
+      'scout-hiring': { x: 230, y: 60, label: 'Scout: Hiring', icon: '👥' },
+      'scout-news': { x: 380, y: 60, label: 'Scout: News', icon: '📰' },
+      'scout-patents': { x: 530, y: 60, label: 'Scout: Patents', icon: '🔬' },
+      'analyst': { x: 305, y: 200, label: 'Analyst', icon: '🔍' },
+      'strategist': { x: 305, y: 340, label: 'Strategist', icon: '🎯' },
     };
 
     // Edges
@@ -162,41 +69,58 @@ export function DAGView({ dag, findings = [] }) {
       if (!pos) return;
 
       const g = svg.append('g')
-        .attr('transform', `translate(${pos.x}, ${pos.y})`);
+        .attr('transform', `translate(${pos.x}, ${pos.y})`)
+        .style('cursor', 'pointer')
+        .on('mouseenter', () => setHoveredNode(node))
+        .on('mouseleave', () => setHoveredNode(null));
 
-      // Node circle/rect
+      // Node background
       const color = statusColors[node.status] || '#374151';
       g.append('rect')
-        .attr('x', -40)
-        .attr('y', -20)
-        .attr('width', 80)
-        .attr('height', 40)
-        .attr('rx', 8)
+        .attr('x', -60)
+        .attr('y', -35)
+        .attr('width', 120)
+        .attr('height', 70)
+        .attr('rx', 12)
         .attr('fill', color)
-        .attr('class', node.status === 'running' ? 'pulse-node' : '');
+        .attr('class', node.status === 'running' ? 'pulse-node' : '')
+        .style('transition', 'all 0.3s ease');
 
-      // Node label
-      const label = node.id.replace('scout-', '').replace('-', ' ');
+      // Node icon
       g.append('text')
         .attr('text-anchor', 'middle')
-        .attr('dy', 4)
+        .attr('dy', -10)
         .attr('fill', 'white')
-        .attr('font-size', '11px')
-        .attr('font-weight', '500')
-        .text(label.charAt(0).toUpperCase() + label.slice(1));
+        .attr('font-size', '24px')
+        .text(pos.icon);
+
+      // Node label
+      g.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', 20)
+        .attr('fill', 'white')
+        .attr('font-size', '12px')
+        .attr('font-weight', '600')
+        .text(pos.label);
 
       // Confidence badge for completed nodes
       if (node.status === 'completed' && node.confidence !== null) {
         g.append('text')
           .attr('text-anchor', 'middle')
-          .attr('dy', 55)
+          .attr('dy', 58)
           .attr('fill', '#9ca3af')
-          .attr('font-size', '10px')
-          .text(`${Math.round(node.confidence * 100)}%`);
+          .attr('font-size', '11px')
+          .attr('font-weight', '600')
+          .text(`${Math.round(node.confidence * 100)}% confidence`);
       }
     });
 
   }, [dag, findings]);
+
+  // Find finding for hovered node
+  const hoveredFinding = hoveredNode 
+    ? findings.find(f => f.node_id === hoveredNode.id) 
+    : null;
 
   if (!dag) {
     return (
@@ -208,17 +132,103 @@ export function DAGView({ dag, findings = [] }) {
   }
 
   return (
-    <div className="dag-view">
+    <div className="dag-view" style={{ position: 'relative', height: '440px' }}>
       <svg ref={svgRef} viewBox="0 0 620 440" style={{ width: '100%', height: '100%' }} />
       <style>{`
         .pulse-node {
           animation: pulse 1.5s ease-in-out infinite;
         }
         @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.6; }
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.02); }
+        }
+        .dag-tooltip {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 16px;
+          max-width: 320px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
       `}</style>
+
+      {hoveredNode && (
+        <div className="dag-tooltip">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <span style={{ fontSize: '20px' }}>
+              {hoveredNode.id.includes('scout-pricing') ? '💰' :
+               hoveredNode.id.includes('scout-hiring') ? '👥' :
+               hoveredNode.id.includes('scout-news') ? '📰' :
+               hoveredNode.id.includes('scout-patents') ? '🔬' :
+               hoveredNode.id === 'analyst' ? '🔍' : '🎯'}
+            </span>
+            <strong style={{ fontSize: '16px' }}>
+              {hoveredNode.id.replace('scout-', '').charAt(0).toUpperCase() +
+               hoveredNode.id.replace('scout-', '').slice(1).replace('-', ' ')}
+            </strong>
+          </div>
+          <div style={{ marginBottom: '8px' }}>
+            <span style={{ color: '#9ca3af', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Status: 
+            </span>
+            <span style={{ 
+              color: hoveredNode.status === 'running' ? '#2563eb' :
+                     hoveredNode.status === 'completed' ? '#16a34a' :
+                     hoveredNode.status === 'failed' ? '#dc2626' : '#6b7280',
+              fontWeight: 600,
+              marginLeft: '6px'
+            }}>
+              {hoveredNode.status.charAt(0).toUpperCase() + hoveredNode.status.slice(1)}
+            </span>
+          </div>
+          {hoveredFinding && (
+            <div style={{ fontSize: '13px', color: '#e5e7eb', lineHeight: '1.5' }}>
+              {hoveredFinding.summary}
+              {hoveredFinding.confidence !== undefined && hoveredFinding.confidence !== null && (
+                <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+                  <span style={{ color: '#9ca3af', fontSize: '12px' }}>Confidence: </span>
+                  <span style={{ fontWeight: 600, color: '#16a34a' }}>
+                    {Math.round(hoveredFinding.confidence * 100)}%
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* DAG Status Header */}
+      <div style={{
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
+        borderRadius: 12,
+        padding: '12px 16px'
+      }}>
+        <div style={{
+          color: '#9ca3af',
+          fontSize: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          marginBottom: '4px'
+        }}>
+          Pipeline Status
+        </div>
+        <div style={{
+          fontSize: '18px',
+          fontWeight: 600,
+          color: dag.status === 'completed' ? '#16a34a' :
+                 dag.status === 'failed' ? '#dc2626' :
+                 dag.status === 'running' ? '#2563eb' : '#e5e7eb'
+        }}>
+          {dag.status.charAt(0).toUpperCase() + dag.status.slice(1)}
+        </div>
+      </div>
     </div>
   );
 }

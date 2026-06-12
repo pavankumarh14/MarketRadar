@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWebSocket } from './hooks/useWebSocket';
-import { getMissions, getMissionSignals, getMissionBriefs, getMissionDAGs, triggerScan } from './services/api';
+import { getMissions, getMissionSignals, getMissionBriefs, getMissionDAGs, triggerScan, getDAGFindings } from './services/api';
 import { MissionBuilder } from './components/MissionBuilder';
 import { SignalList }     from './components/SignalList';
 import { DAGView }        from './components/DAGView';
@@ -43,8 +43,17 @@ export default function App() {
       setBriefs(briefs);
       setActiveBrief(briefs[0] ?? null);
       setActiveDAG(dags[0] ?? null);
+      if (dags[0]) {
+        getDAGFindings(dags[0].id).then(f => setDAGFindings(f));
+      }
     }).catch(console.error);
   }, [activeMission?.id]);
+
+  useEffect(() => {
+    if (activeDAG?.id) {
+      getDAGFindings(activeDAG.id).then(f => setDAGFindings(f));
+    }
+  }, [activeDAG?.id]);
 
   // ── WebSocket: update state on live events ────────────────────────────────
   useEffect(() => {

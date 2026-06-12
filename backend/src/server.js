@@ -10,6 +10,7 @@ const { v4: uuidv4 }      = require('uuid');
 const path    = require('path');
 
 const {
+  initDb,
   getDb,
   saveMission, getMissions, getMissionById, updateMissionStatus,
   getDAGsByMissionId, getDAGById,
@@ -181,17 +182,22 @@ app.get('/api/missions/:id/briefs', (req, res) => {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
-server.listen(PORT, () => {
-  const host = NODE_ENV === 'production' ? 'Render.com' : `localhost:${PORT}`;
-  console.log(`\n🧠 MarketRadar backend → http://${host}`);
-  console.log(`   WebSocket          → ws://${host}/ws`);
-  console.log(`   Environment        → ${NODE_ENV}`);
-  console.log(`   LLM mode           → ${process.env.GROQ_API_KEY ? 'Groq (live)' : 'mock'}\n`);
+async function startServer() {
+  await initDb();
+  server.listen(PORT, () => {
+    const host = NODE_ENV === 'production' ? 'Render.com' : `localhost:${PORT}`;
+    console.log(`\n🧠 MarketRadar backend → http://${host}`);
+    console.log(`   WebSocket          → ws://${host}/ws`);
+    console.log(`   Environment        → ${NODE_ENV}`);
+    console.log(`   LLM mode           → ${process.env.GROQ_API_KEY ? 'Groq (live)' : 'mock'}\n`);
 
-  // Re-start schedulers for any active missions that survived a server restart.
-  const missions = getMissions().filter(m => m.status === 'active');
-  for (const m of missions) {
-    startScheduler(m.id, m.cadence_minutes, () => runScan(m.id));
-    console.log(`   Resumed scheduler for mission "${m.name}" (every ${m.cadence_minutes} min)`);
-  }
-});
+    // Re-start schedulers for any active missions that survived a server restart.
+    const missions = getMissions().filter(m => m.status === 'active');
+    for (const m of missions) {
+      startScheduler(m.id, m.cadence_minutes, () => runScan(m.id));
+      console.log(`   Resumed scheduler for mission "${m.name}" (every ${m.cadence_minutes} min)`);
+    }
+  });
+}
+
+startServer();
