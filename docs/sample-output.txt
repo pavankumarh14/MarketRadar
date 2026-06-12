@@ -1,0 +1,223 @@
+MarketRadar — Sample Pipeline Outputs
+======================================
+Use this as a reference when implementing the Signal-Ranker, Analyst,
+and Strategist agents. Your output shape should match what is shown here.
+
+Mission used for this example:
+  Competitors:  OpenAI, Cohere, Mistral
+  Dimensions:   pricing, hiring, news, patents
+  Scan cycle:   2 (first scan after baseline established in cycle 1)
+
+
+======================================
+PHASE 1 (parallel) — Scout Outputs (all 4 built — reference)
+======================================
+
+--- Scout-Pricing ---
+Finding summary: "OpenAI cut GPT-4o by 83%, Cohere launched Command R+ at -80% vs Command"
+
+details.signals:
+[
+  { "competitor": "OpenAI",  "change": "GPT-4o: $0.03 → $0.005/1K tokens (-83%)", "delta_pct": 83, "significance": "high" },
+  { "competitor": "Cohere",  "change": "New Command R+ at $0.003/1K (-80% vs Command)", "delta_pct": 80, "significance": "high" },
+  { "competitor": "Mistral", "change": "No pricing changes detected", "delta_pct": 0,  "significance": "low" }
+]
+confidence: 0.85 | verdict: "significant"
+
+--- Scout-Hiring ---
+Finding summary: "OpenAI +64% headcount surge, Cohere +52%, Mistral -13% slight pullback"
+
+details.signals:
+[
+  { "competitor": "OpenAI",  "change": "Total openings: 87 → 143 (+64%)", "delta_pct": 64, "significance": "high" },
+  { "competitor": "Cohere",  "change": "Total openings: 44 → 67 (+52%)",  "delta_pct": 52, "significance": "high" },
+  { "competitor": "Mistral", "change": "Total openings: 31 → 27 (-13%)",  "delta_pct": 13, "significance": "medium" }
+]
+confidence: 0.78 | verdict: "significant"
+
+--- Scout-News ---
+Finding summary: "OpenAI 12 articles vs 5 baseline (+140%), price cut announcement driving engagement"
+
+details.signals:
+[
+  { "competitor": "OpenAI",  "change": "12 articles vs 5 baseline. Top: 'OpenAI cuts GPT-4o pricing by 80%' (1,402 pts)", "delta_pct": 140, "significance": "high" },
+  { "competitor": "Cohere",  "change": "4 articles vs 2 baseline. Top: 'Command R+ matches GPT-4 on benchmarks'", "delta_pct": 100, "significance": "medium" },
+  { "competitor": "Mistral", "change": "1 article — 'Mistral holds pricing as competitors slash costs'", "delta_pct": -50, "significance": "low" }
+]
+confidence: 0.75 | verdict: "significant"
+
+--- Scout-Patents ---
+Finding summary: "OpenAI filed 6 new patents in inference efficiency — signals architectural investment"
+
+details.signals:
+[
+  { "competitor": "OpenAI",  "change": "9 new filings vs 3 baseline (+200%). Cluster: inference efficiency (3 patents)", "delta_pct": 200, "significance": "high" },
+  { "competitor": "Cohere",  "change": "5 new filings vs 2 baseline. Focus: RAG + retrieval",  "delta_pct": 150, "significance": "medium" },
+  { "competitor": "Mistral", "change": "2 new filings — architecture (sliding window attention)", "delta_pct": 100, "significance": "medium" }
+]
+confidence: 0.72 | verdict: "significant"
+
+
+======================================
+SIGNAL RANKER — Algorithm Output (YOUR TASK)
+======================================
+
+The Signal-Ranker scores and deduplicates findings before the brief.
+Formula: score = SIGNIFICANCE_WEIGHT[verdict] × confidence × recency_decay
+No LLM — pure algorithm.
+
+Ranked output (descending score):
+[
+  { "capability": "scout-pricing",  "score": 0.85, "is_new": true,  "summary": "OpenAI -83%, Cohere -80% price cuts" },
+  { "capability": "scout-hiring",   "score": 0.78, "is_new": true,  "summary": "OpenAI +64%, Cohere +52% headcount" },
+  { "capability": "scout-news",     "score": 0.75, "is_new": true,  "summary": "OpenAI 1,402pt article on price cuts" },
+  { "capability": "scout-patents",  "score": 0.72, "is_new": true,  "summary": "OpenAI 6 inference patents" }
+]
+
+On cycle 3 (same signals repeat):
+  { "capability": "scout-pricing", "score": 0.51, "is_new": false }
+  ← score × 0.6 recurring multiplier — still shown but ranked lower
+
+
+======================================
+PHASE 2 — Analyst Agent Output (YOUR TASK)
+======================================
+
+The Analyst interprets WHAT each signal means strategically.
+Scouts say what changed. Analyst says what it means.
+
+Finding summary:
+  "OpenAI and Cohere executing coordinated commoditisation play — developer land-grab ahead of enterprise push"
+
+details.interpretations:
+[
+  {
+    "competitor":     "OpenAI",
+    "dimension":      "pricing",
+    "signal":         "GPT-4o dropped 83%",
+    "interpretation": "Commoditisation play — sacrificing margin to capture developer mindshare before alternatives gain traction. This is a land-grab, not a margin squeeze.",
+    "implication":    "Competing on API price alone becomes a losing position within 90 days"
+  },
+  {
+    "competitor":     "OpenAI",
+    "dimension":      "hiring",
+    "signal":         "64% headcount surge, concentrated in Inference Engineering and Enterprise Sales",
+    "interpretation": "Pre-launch build-out. Inference engineers suggest an upcoming performance improvement. Enterprise Sales surge signals they are preparing a two-phase land-and-expand motion.",
+    "implication":    "Expect a major product announcement within 60 days followed by enterprise push"
+  },
+  {
+    "competitor":     "Cohere",
+    "dimension":      "pricing",
+    "signal":         "Command R+ launched at -80% vs Command",
+    "interpretation": "Defensive response to OpenAI — Cohere cannot afford to lose developer mindshare to GPT-4o. Moving downmarket while keeping enterprise tier intact.",
+    "implication":    "Cohere is splitting strategy: commodity for developers, premium for enterprise"
+  },
+  {
+    "competitor":     "Mistral",
+    "dimension":      "hiring",
+    "signal":         "-13% headcount — slight pullback",
+    "interpretation": "Mistral is NOT following OpenAI/Cohere on pricing. Pullback may indicate budget conservation while they prepare a differentiated offering (confirmed by patent activity).",
+    "implication":    "Mistral is betting on IP moat rather than scale — watch for a quality/efficiency play"
+  }
+]
+
+details.hot_threads:
+[
+  "OpenAI enterprise sales build-out — monitor for Q3 enterprise pricing announcement",
+  "Mistral IP strategy — 2 architecture patents signal a performance-per-cost positioning"
+]
+
+confidence: 0.78 | verdict: "significant"
+
+
+======================================
+PHASE 3 — Strategist Agent Output (YOUR TASK)
+======================================
+
+The Strategist connects signals ACROSS sources into one narrative.
+Analyst gives per-signal interpretations. Strategist gives the big picture.
+
+Finding summary:
+  "Market bifurcating: OpenAI/Cohere racing to commodity floor, Mistral building IP moat"
+
+details.narrative:
+  "OpenAI and Cohere are executing a textbook two-phase land-and-expand strategy:
+   slash API pricing to win developers (pricing + news signals), simultaneously
+   build enterprise sales capacity (hiring signal), while filing infrastructure
+   patents to maintain a moat once commoditisation takes hold (patent signal).
+   Mistral is holding pricing and conserving headcount — betting that IP and
+   efficiency will differentiate when the price war bottoms out.
+   The market is bifurcating. Response window: 60-90 days before the enterprise
+   sales motion matures."
+
+details.competitive_shifts:
+[
+  {
+    "competitors":          ["OpenAI", "Cohere"],
+    "what_changed":         "Simultaneous 67-83% price cuts + hiring surges",
+    "strategic_implication":"API pricing floor is collapsing — revenue must shift to platform lock-in",
+    "urgency":              "high"
+  },
+  {
+    "competitors":          ["Mistral"],
+    "what_changed":         "Holding pricing, filing architecture patents, slight headcount pullback",
+    "strategic_implication":"Mistral is positioning as the performance-per-dollar alternative for cost-conscious enterprise",
+    "urgency":              "medium"
+  }
+]
+
+details.recommendations:
+[
+  { "action": "Review API pricing tiers against new market floor within 30 days",       "rationale": "Developer adoption is top-of-funnel for enterprise deals",          "priority": "high" },
+  { "action": "Accelerate enterprise SLA and support differentiation",                  "rationale": "Competing on price alone is losing — differentiate on reliability",  "priority": "high" },
+  { "action": "Monitor OpenAI enterprise sales roles — signals Q3 pricing announcement","rationale": "30+ enterprise AE openings = imminent push",                         "priority": "medium" }
+]
+
+confidence: 0.76 | verdict: "significant"
+
+
+======================================
+FINAL BRIEF (assembled by assembler.js after Strategist)
+======================================
+
+What appears in the 📋 Brief tab:
+
+executive_summary:
+  "OpenAI and Cohere are executing a coordinated commoditisation strategy:
+   slashing API prices 67-83% while aggressively hiring to maintain execution
+   speed. Mistral is holding pricing and building IP. The market is bifurcating
+   into commodity inference and specialised models. Response window: 60-90 days."
+
+cross_source_insights:
+  - "Price cuts + hiring surge = pre-launch scale-up (OpenAI, Cohere)"
+  - "Patent cluster in inference efficiency = architectural investment to defend quality at lower price"
+  - "Mistral pullback + patents = deliberate IP moat strategy, not budget trouble"
+
+strategic_recommendations:
+  - { action: "Review API pricing tiers", priority: "high" }
+  - { action: "Accelerate enterprise differentiation", priority: "high" }
+  - { action: "Monitor OpenAI enterprise sales hiring", priority: "medium" }
+
+confidence: 0.76
+
+
+======================================
+SQLITE VERIFICATION COMMANDS
+======================================
+
+After running a scan:
+
+  # Check all findings for the latest scan cycle
+  sqlite3 backend/data/marketmind.db \
+    "SELECT capability, verdict, confidence FROM findings ORDER BY created_at DESC LIMIT 10"
+
+  # Check signal ranker output (is_new field)
+  sqlite3 backend/data/marketmind.db \
+    "SELECT capability, score, is_new FROM findings WHERE capability LIKE 'scout-%' ORDER BY score DESC"
+
+  # Check latest brief
+  sqlite3 backend/data/marketmind.db \
+    "SELECT executive_summary, confidence FROM briefs ORDER BY created_at DESC LIMIT 1"
+
+Expected: 7 findings per scan cycle (4 scouts + ranker + analyst + strategist)
+Ranker finding should have score > 0 and is_new field populated

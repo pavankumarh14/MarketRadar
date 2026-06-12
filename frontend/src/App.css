@@ -1,0 +1,231 @@
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --bg:           #0f172a;
+  --bg-card:      #1e293b;
+  --bg-hover:     #273349;
+  --border:       #334155;
+  --text-primary: #f1f5f9;
+  --text-muted:   #94a3b8;
+  --accent:       #6366f1;
+  --green:        #16a34a;
+  --red:          #dc2626;
+  --yellow:       #ca8a04;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── Layout ────────────────────────────────────────────────────────────────── */
+.app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+.app-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 20px; height: 52px;
+  background: var(--bg-card); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header-left  { display: flex; align-items: center; gap: 12px; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+.logo { font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
+
+.ws-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.ws-dot.connected    { background: var(--green); }
+.ws-dot.disconnected { background: var(--red); animation: blink 1.5s infinite; }
+
+.event-count { color: var(--text-muted); font-size: 12px; }
+
+.app-body { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar ───────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: 280px; flex-shrink: 0;
+  background: var(--bg-card); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+
+.mission-list { padding: 8px; border-bottom: 1px solid var(--border); }
+
+.mission-item {
+  display: flex; justify-content: space-between; align-items: center;
+  width: 100%; padding: 8px 10px; border-radius: 6px;
+  border: none; background: none; color: var(--text-primary);
+  cursor: pointer; text-align: left;
+}
+.mission-item:hover { background: var(--bg-hover); }
+.mission-item.active { background: var(--accent)22; border: 1px solid var(--accent)44; }
+
+.mission-name  { font-size: 13px; font-weight: 500; }
+.mission-status { font-size: 11px; color: var(--text-muted); padding: 2px 6px; border-radius: 4px; background: var(--bg); }
+.status-active  { color: var(--green) !important; }
+.status-paused  { color: var(--yellow) !important; }
+
+.no-missions { color: var(--text-muted); font-size: 12px; padding: 8px; }
+
+.sidebar-section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.signal-count { background: var(--accent); color: #fff; border-radius: 10px; padding: 0 6px; font-size: 10px; }
+
+/* ── Signal list ───────────────────────────────────────────────────────────── */
+.signal-list { flex: 1; overflow-y: auto; padding: 6px 8px; }
+.signal-list.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); gap: 6px; }
+.signal-list.empty .hint { font-size: 11px; text-align: center; max-width: 200px; }
+
+.signal-card {
+  background: var(--bg); border-radius: 8px;
+  border-left: 3px solid var(--border);
+  padding: 10px; margin-bottom: 8px;
+}
+
+.signal-header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.dim-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+.verdict-badge { font-size: 11px; font-weight: 500; }
+.signal-time { margin-left: auto; font-size: 10px; color: var(--text-muted); }
+.signal-summary { font-size: 12px; line-height: 1.5; margin-bottom: 6px; color: var(--text-primary); }
+
+.confidence-row { display: flex; align-items: center; gap: 6px; }
+.conf-label { font-size: 10px; color: var(--text-muted); width: 64px; }
+.conf-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.conf-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+.conf-pct { font-size: 11px; color: var(--text-muted); width: 32px; text-align: right; }
+
+.signal-cycle { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Main panel ────────────────────────────────────────────────────────────── */
+.main-panel { flex: 1; overflow-y: auto; padding: 20px; }
+
+.view-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+.tab {
+  padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+  background: none; color: var(--text-muted); cursor: pointer; font-size: 13px;
+}
+.tab:hover { background: var(--bg-hover); color: var(--text-primary); }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Buttons ───────────────────────────────────────────────────────────────── */
+.btn-primary {
+  display: block; width: 100%; padding: 10px;
+  background: var(--accent); color: #fff; font-size: 14px; font-weight: 600;
+  border: none; border-radius: 8px; cursor: pointer;
+}
+.btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-scan {
+  padding: 6px 14px; background: var(--green);
+  color: #fff; font-size: 13px; font-weight: 600;
+  border: none; border-radius: 6px; cursor: pointer;
+}
+.btn-scan:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-ghost {
+  padding: 6px 12px; background: none;
+  color: var(--text-muted); font-size: 13px;
+  border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
+}
+.btn-ghost:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+/* ── Mission builder ───────────────────────────────────────────────────────── */
+.mission-builder { max-width: 560px; display: flex; flex-direction: column; gap: 20px; }
+.mission-builder h2 { font-size: 18px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > span { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.field input, .field select {
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-primary); border-radius: 6px; padding: 8px 10px; font-size: 14px;
+}
+.field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
+
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--accent)22; color: var(--accent);
+  border-radius: 14px; padding: 2px 8px 2px 10px; font-size: 12px;
+}
+.tag button { background: none; border: none; color: inherit; cursor: pointer; font-size: 14px; line-height: 1; }
+
+.inline-input { display: flex; gap: 6px; }
+.inline-input input { flex: 1; }
+
+.dimension-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dim-card {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--border); cursor: pointer;
+  transition: border-color 0.15s;
+}
+.dim-card input { display: none; }
+.dim-card strong { font-size: 13px; }
+.dim-card small  { font-size: 11px; color: var(--text-muted); }
+.dim-card.active { border-color: var(--accent); background: var(--accent)11; }
+
+.error-msg { color: var(--red); font-size: 13px; }
+
+/* ── DAG view ──────────────────────────────────────────────────────────────── */
+.dag-view { min-height: 300px; }
+.dag-view.empty, .signal-timeline.empty, .brief-panel.empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 240px; color: var(--text-muted); gap: 6px;
+}
+.dag-view.empty .hint, .signal-timeline.empty .hint, .brief-panel.empty .hint {
+  font-size: 12px; max-width: 280px; text-align: center;
+}
+
+.dag-text-fallback { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.dag-text-node {
+  display: flex; gap: 12px; align-items: center;
+  background: var(--bg-card); padding: 8px 12px; border-radius: 6px;
+  border-left: 3px solid var(--border);
+}
+.dag-text-node.status-running   { border-left-color: #2563eb; animation: blink 1s infinite; }
+.dag-text-node.status-completed { border-left-color: var(--green); }
+.dag-text-node.status-failed    { border-left-color: var(--red); }
+.node-id { font-weight: 600; font-size: 13px; }
+.node-status { color: var(--text-muted); font-size: 12px; }
+.node-conf { margin-left: auto; color: var(--green); font-size: 12px; font-weight: 600; }
+
+/* ── Brief panel ───────────────────────────────────────────────────────────── */
+.brief-panel { display: flex; flex-direction: column; gap: 20px; }
+.brief-header { display: flex; justify-content: space-between; align-items: center; }
+.brief-header h2 { font-size: 18px; }
+.brief-section { background: var(--bg-card); border-radius: 10px; padding: 16px; }
+.brief-section h3 { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.brief-section ul { padding-left: 18px; }
+.brief-section li { margin-bottom: 6px; font-size: 13px; line-height: 1.5; }
+.brief-section p  { font-size: 14px; line-height: 1.7; }
+
+.rec-card { background: var(--bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+.priority-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; display: block; }
+.rec-rationale { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Stub banners ──────────────────────────────────────────────────────────── */
+.stub-banner {
+  background: #92400e22; border: 1px solid #92400e;
+  color: #fcd34d; border-radius: 8px; padding: 10px 14px; font-size: 13px;
+}
+.stub-label { font-weight: 600; color: var(--yellow); font-size: 13px; margin-bottom: 4px; }
+.stub-hint  { font-size: 12px; color: var(--text-muted); }
+.dag-view.stub, .signal-timeline.stub, .brief-panel.stub {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+/* ── Animations ────────────────────────────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
