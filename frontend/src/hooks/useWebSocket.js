@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 // Use environment variable for production, proxy for development
 const WS_URL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL.replace('http://', 'ws://').replace('https://', 'wss://')}/ws`
-  : `ws://${window.location.host}/ws`;
+  : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
 const MAX_BACKOFF = 30_000;
 
 /**

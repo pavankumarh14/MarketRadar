@@ -3,6 +3,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 
 // Use Render persistent disk mount point in production, local path in development
 const DATA_DIR = process.env.NODE_ENV === 'production' 
@@ -99,6 +100,28 @@ function initSchema() {
       FOREIGN KEY (mission_id) REFERENCES missions(id)
     );
   `);
+
+  // Seed sample mission if none exist
+  seedSampleMission();
+}
+
+function seedSampleMission() {
+  const existingMissions = getMissions();
+  if (existingMissions.length > 0) return;
+
+  const sampleMission = {
+    id: `mission-${uuidv4()}`,
+    name: 'AI Platform Pricing War Demo',
+    competitors: ['OpenAI', 'Cohere', 'Mistral'],
+    dimensions: ['pricing', 'hiring', 'patents'],
+    cadence_minutes: 60,
+    status: 'active',
+    scan_cycle: 0,
+    created_at: new Date().toISOString(),
+  };
+
+  saveMission(sampleMission);
+  console.log('   Seeded sample mission:', sampleMission.name);
 }
 
 // ── Missions ─────────────────────────────────────────────────────────────────
