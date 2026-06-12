@@ -12,12 +12,12 @@ services:
       - key: PORT
         value: 3001
       - key: FRONTEND_ORIGIN
-        value: https://marketradar.onrender.com
+        value: https://marketradar-94rr.onrender.com
       - key: GROQ_API_KEY
         sync: false
     healthCheckPath: /health
     # Persistent disk for SQLite database
     disk:
       name: data
-      mountPath: /opt/render/project/backend/data
+      mountPath: /opt/render/project/src/backend/data
       sizeGB: 1
